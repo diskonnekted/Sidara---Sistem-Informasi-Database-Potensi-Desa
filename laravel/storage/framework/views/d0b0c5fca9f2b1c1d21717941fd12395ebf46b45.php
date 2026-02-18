@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>SIDARA - Sistem Informasi Database Potensi Desa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f5f2ec] text-slate-900">
+  <div class="min-h-screen flex flex-col">
+    <header class="relative">
+      <div class="absolute inset-0">
+        <img
+          src="https://images.pexels.com/photos/900274/pexels-photo-900274.jpeg"
+          alt="Pemandangan Banjarnegara"
+          class="w-full h-full object-cover"
+        >
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70"></div>
+      </div>
+
+      <div class="relative z-10 max-w-6xl mx-auto px-4 pt-4 pb-24 md:pb-32">
+        <div class="flex items-center justify-between text-white mb-10">
+          <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center">
+              <span class="text-xs font-semibold tracking-wider">SD</span>
+            </div>
+            <div>
+              <div class="text-sm font-semibold tracking-wide uppercase">SIDARA</div>
+              <div class="text-xs text-white/70">Potensi Desa Banjarnegara</div>
+            </div>
+          </div>
+          <button class="hidden sm:inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>Admin Login</span>
+          </button>
+        </div>
+
+        <div class="max-w-xl text-white space-y-4">
+          <p class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/60">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>
+            Direktori digital potensi desa se-Banjarnegara
+          </p>
+          <h1 class="text-3xl md:text-4xl font-bold leading-tight">
+            Temukan Potensi Desa di
+            <span class="text-amber-300">Banjarnegara</span>
+            dalam satu peta.
+          </h1>
+          <p class="text-sm md:text-base text-white/80">
+            Jelajahi wisata, UMKM, pertanian, dan peluang investasi desa dengan
+            data terverifikasi dari pemerintah desa dan warga setempat.
+          </p>
+        </div>
+
+        <div class="mt-6 md:mt-8 max-w-2xl space-y-3">
+          <div class="bg-white/10 backdrop-blur rounded-2xl p-2 border border-white/15">
+            <form method="GET" action="<?php echo e(url('/')); ?>" class="flex flex-col md:flex-row gap-2 md:gap-3">
+              <div class="flex-1 flex items-center gap-2 bg-white rounded-xl px-3 py-2.5">
+                <svg class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.5"></circle>
+                  <path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                </svg>
+                <input
+                  type="text"
+                  name="q"
+                  value="<?php echo e(request('q')); ?>"
+                  placeholder="Apa potensi desa yang Anda cari?"
+                  class="w-full text-sm bg-transparent outline-none placeholder:text-slate-400"
+                >
+              </div>
+              <div class="flex gap-2">
+                <select name="district" class="flex-1 md:flex-none md:w-40 text-xs bg-white/90 border border-white/60 rounded-xl px-3 py-2.5 text-slate-700">
+                  <option value="">Semua Kecamatan</option>
+                  <option value="Banjarnegara" <?php if(request('district') === 'Banjarnegara'): ?> selected <?php endif; ?>>Banjarnegara</option>
+                  <option value="Batur" <?php if(request('district') === 'Batur'): ?> selected <?php endif; ?>>Batur</option>
+                </select>
+                <button
+                  type="submit"
+                  class="flex-1 md:flex-none md:w-32 inline-flex items-center justify-center gap-2 text-xs font-semibold tracking-wide uppercase bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2.5 shadow-sm"
+                >
+                  Cari
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 text-[11px]">
+            <span class="text-white/70 mr-1">Kategori populer:</span>
+            <span class="px-3 py-1 rounded-full bg-white/10 text-white border border-white/20">
+              Wisata
+            </span>
+            <span class="px-3 py-1 rounded-full bg-white/5 text-white/80 border border-white/10">
+              UMKM
+            </span>
+            <span class="px-3 py-1 rounded-full bg-white/5 text-white/80 border border-white/10">
+              Tambang
+            </span>
+            <span class="px-3 py-1 rounded-full bg-white/5 text-white/80 border border-white/10">
+              Pertanian
+            </span>
+            <a href="<?php echo e(route('villages.index')); ?>" class="px-3 py-1 rounded-full bg-white text-emerald-800 border border-white/10 font-semibold">
+              Lihat semua desa
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="relative flex-1 -mt-10 md:-mt-16">
+      <div class="max-w-6xl mx-auto px-4 pb-24 md:pb-32">
+        <div class="grid md:grid-cols-[2fr,1fr] gap-6 md:gap-8 items-start">
+          <section class="bg-white rounded-3xl shadow-lg shadow-amber-900/5 border border-amber-100 p-4 md:p-6">
+            <div class="flex items-center justify-between mb-4 md:mb-6">
+              <div>
+                <h2 class="text-sm md:text-base font-semibold text-slate-900">
+                  Potensi unggulan hari ini
+                </h2>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  Data diambil dari tabel potentials yang sudah terverifikasi.
+                </p>
+              </div>
+              <span class="hidden md:inline-flex text-[11px] font-medium text-slate-400">
+                <?php echo e($potentials->count()); ?> potensi
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+              <?php $__empty_1 = true; $__currentLoopData = $potentials; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $potential): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                <article class="bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 flex flex-col">
+                  <div class="relative">
+                    <img
+                      src="<?php echo e($potential->images[0] ?? 'https://images.pexels.com/photos/2403207/pexels-photo-2403207.jpeg'); ?>"
+                      alt="<?php echo e($potential->title); ?>"
+                      class="w-full h-32 md:h-36 object-cover"
+                    >
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <?php if($potential->verification_status === 'verified'): ?>
+                      <div class="absolute bottom-2 left-2 flex items-center gap-1.5">
+                        <span class="inline-flex items-center gap-1 bg-emerald-500/90 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-200"></span>
+                          Verified Desa
+                        </span>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                  <div class="p-3.5 md:p-4 flex-1 flex flex-col gap-2">
+                    <h3 class="text-sm font-semibold text-slate-900 line-clamp-2">
+                      <?php echo e($potential->title); ?>
+
+                    </h3>
+                    <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                      <?php if($potential->village): ?>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700">
+                          <svg class="w-3 h-3 text-emerald-500" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 21C12 21 5 14.6863 5 10C5 6.68629 7.68629 4 11 4H13C16.3137 4 19 6.68629 19 10C19 14.6863 12 21 12 21Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+                            <circle cx="12" cy="10" r="2.25" stroke="currentColor" stroke-width="1.5"></circle>
+                          </svg>
+                          <?php echo e($potential->village->village_name); ?>
+
+                        </span>
+                      <?php endif; ?>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                        Potensi Desa
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 line-clamp-2">
+                      <?php echo e($potential->description ?: 'Belum ada deskripsi.'); ?>
+
+                    </p>
+                    <div class="mt-auto flex items-center justify-between">
+                      <p class="text-[11px] text-slate-600">
+                        <?php if($potential->price_range): ?>
+                          Kisaran
+                          <span class="font-semibold text-slate-900"><?php echo e($potential->price_range); ?></span>
+                        <?php elseif(($potential->attributes['category_slug'] ?? null) === 'wisata' && isset($potential->attributes['htm'])): ?>
+                          HTM
+                          <span class="font-semibold text-slate-900">Rp <?php echo e(number_format($potential->attributes['htm'])); ?></span>
+                        <?php else: ?>
+                          <span class="font-semibold text-slate-900">Info harga di lokasi</span>
+                        <?php endif; ?>
+                      </p>
+                      <a href="<?php echo e(route('potentials.show', $potential->slug)); ?>" class="text-[11px] font-semibold text-emerald-700">
+                        Detail
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                <p class="text-xs text-slate-500 col-span-3">
+                  Belum ada data potensi yang terverifikasi.
+                </p>
+              <?php endif; ?>
+            </div>
+          </section>
+
+          <aside class="space-y-4 md:space-y-5">
+            <div class="bg-emerald-900 text-emerald-50 rounded-3xl p-4 md:p-5 flex flex-col gap-3 shadow-lg shadow-emerald-900/30">
+              <div class="text-xs font-semibold tracking-wide uppercase text-emerald-200">
+                Untuk Admin Desa
+              </div>
+              <h2 class="text-sm md:text-base font-semibold leading-snug">
+                Kurasi potensi desa Anda langsung dari dashboard SIDARA.
+              </h2>
+              <p class="text-[11px] text-emerald-100">
+                Verifikasi data UMKM dan wisata yang diajukan warga, lalu tampilkan
+                ke publik sebagai potensi resmi desa.
+              </p>
+              <button class="inline-flex items-center justify-center gap-2 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-emerald-950 rounded-xl px-3 py-2">
+                Masuk sebagai Admin Desa
+              </button>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-amber-100 p-4 md:p-5 flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <div class="text-xs font-semibold text-slate-900">
+                  Statistik singkat
+                </div>
+                <span class="text-[11px] text-slate-400">Mockup</span>
+              </div>
+              <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="space-y-1">
+                  <div class="text-sm font-semibold text-slate-900">85+</div>
+                  <div class="text-[10px] text-slate-500">Desa terdata</div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-sm font-semibold text-slate-900">230+</div>
+                  <div class="text-[10px] text-slate-500">Potensi tampil</div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-sm font-semibold text-slate-900">120+</div>
+                  <div class="text-[10px] text-slate-500">UMKM aktif</div>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <nav class="fixed bottom-0 inset-x-0 z-20 md:hidden">
+      <div class="mx-auto max-w-md px-4 pb-3">
+        <div class="bg-white rounded-2xl shadow-xl border border-amber-100 px-4 py-1.5 flex justify-between">
+          <a href="<?php echo e(route('home')); ?>" class="flex flex-col items-center justify-center flex-1 py-1.5 text-emerald-700">
+            <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none">
+              <path d="M5 11L12 4L19 11V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
+              <path d="M10 20V14H14V20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <span class="text-[10px] font-semibold">Beranda</span>
+          </a>
+          <a href="#" class="flex flex-col items-center justify-center flex-1 py-1.5 text-slate-500">
+            <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="5" stroke="currentColor" stroke-width="1.6"></circle>
+              <path d="M15.5 15.5L19 19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            </svg>
+            <span class="text-[10px] font-medium">Jelajah</span>
+          </a>
+          <a href="<?php echo e(route('map')); ?>" class="flex flex-col items-center justify-center flex-1 py-1.5 text-slate-500">
+            <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none">
+              <path d="M8 7C8 5.89543 8.89543 5 10 5H14C15.1046 5 16 5.89543 16 7V9C16 10.1046 15.1046 11 14 11H10C8.89543 11 8 10.1046 8 9V7Z" stroke="currentColor" stroke-width="1.6"></path>
+              <path d="M5 17C5 15.8954 5.89543 15 7 15H17C18.1046 15 19 15.8954 19 17V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V17Z" stroke="currentColor" stroke-width="1.6"></path>
+            </svg>
+            <span class="text-[10px] font-medium">Peta</span>
+          </a>
+          <a href="#" class="flex flex-col items-center justify-center flex-1 py-1.5 text-slate-500">
+            <svg class="w-5 h-5 mb-0.5" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="9" r="3" stroke="currentColor" stroke-width="1.6"></circle>
+              <path d="M7 19C7.80377 17.136 9.70189 16 12 16C14.2981 16 16.1962 17.136 17 19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            </svg>
+            <span class="text-[10px] font-medium">Akun</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+  </div>
+</body>
+</html>
+<?php /**PATH C:\xampp\htdocs\sidara\laravel\resources\views/home.blade.php ENDPATH**/ ?>
