@@ -5,15 +5,28 @@
   <title>{{ $potential->title }} - SIDARA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  >
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
 </head>
 <body class="bg-[#f5f2ec] text-slate-900">
   <div class="min-h-screen flex flex-col">
     <header class="bg-emerald-900 text-emerald-50">
       <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
         <a href="{{ route('home') }}" class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
-            <span class="text-xs font-semibold tracking-wider">SD</span>
-          </div>
+          <img
+            src="{{ asset('logo.jpeg') }}"
+            alt="Logo SIDARA"
+            class="w-8 h-8 rounded-xl object-contain bg-emerald-700/80 p-1"
+          >
           <div>
             <div class="text-xs font-semibold tracking-wide uppercase">SIDARA</div>
             <div class="text-[11px] text-emerald-100">Potensi Desa Banjarnegara</div>
@@ -29,9 +42,23 @@
       <div class="max-w-5xl mx-auto px-4 py-5 md:py-8">
         <div class="grid md:grid-cols-[2fr,1fr] gap-6 md:gap-8 items-start">
           <section class="bg-white rounded-3xl border border-amber-100 shadow-sm overflow-hidden">
+            @php
+              $firstImage = $potential->images[0] ?? null;
+              if ($firstImage) {
+                  if (preg_match('/^https?:\/\//i', $firstImage)) {
+                      $firstImageUrl = $firstImage;
+                  } elseif (str_starts_with($firstImage, 'storage/') || str_starts_with($firstImage, 'potensi/') || str_starts_with($firstImage, 'images/')) {
+                      $firstImageUrl = asset($firstImage);
+                  } else {
+                      $firstImageUrl = asset('storage/'.$firstImage);
+                  }
+              } else {
+                  $firstImageUrl = 'https://images.pexels.com/photos/2403207/pexels-photo-2403207.jpeg';
+              }
+            @endphp
             <div class="relative">
               <img
-                src="{{ $potential->images[0] ?? 'https://images.pexels.com/photos/2403207/pexels-photo-2403207.jpeg' }}"
+                src="{{ $firstImageUrl }}"
                 alt="{{ $potential->title }}"
                 class="w-full h-52 md:h-64 object-cover"
               >
@@ -72,6 +99,29 @@
                   {{ $potential->description ?: 'Belum ada deskripsi rinci untuk potensi ini.' }}
                 </p>
               </div>
+
+              @if(is_array($potential->images) && count($potential->images) > 1)
+                <div class="space-y-2">
+                  <h2 class="text-sm font-semibold text-slate-900">Galeri Foto</h2>
+                  <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    @foreach($potential->images as $img)
+                      @php
+                        $src = $img;
+                        if ($img) {
+                            if (!preg_match('/^https?:\/\//i', $img)) {
+                                if (str_starts_with($img, 'storage/') || str_starts_with($img, 'potensi/') || str_starts_with($img, 'images/')) {
+                                    $src = asset($img);
+                                } else {
+                                    $src = asset('storage/'.$img);
+                                }
+                            }
+                        }
+                      @endphp
+                      <img src="{{ $src }}" alt="Foto {{ $potential->title }}" class="w-full h-20 object-cover rounded-xl border border-slate-100">
+                    @endforeach
+                  </div>
+                </div>
+              @endif
 
               <div class="grid sm:grid-cols-3 gap-4 text-sm">
                 <div class="bg-slate-50 rounded-2xl border border-slate-100 p-3.5 space-y-1.5">
@@ -209,6 +259,23 @@
                 dan mengedit data potensi ini.
               </p>
             </div>
+
+            <div class="bg-white rounded-3xl border border-amber-100 p-4 md:p-5 space-y-3">
+              <h2 class="text-sm font-semibold text-slate-900">Peta Desa (OSM)</h2>
+              @if($potential->latitude && $potential->longitude)
+                <div
+                  id="village-map"
+                  class="w-full h-52 md:h-64 rounded-2xl overflow-hidden border border-amber-100"
+                ></div>
+                <p class="text-[11px] text-slate-500">
+                  Peta menggunakan OpenStreetMap dengan titik estimasi lokasi potensi desa.
+                </p>
+              @else
+                <p class="text-[11px] text-slate-500">
+                  Koordinat belum diisi. Admin desa dapat menambahkan latitude dan longitude agar peta tampil di sini.
+                </p>
+              @endif
+            </div>
           </aside>
         </div>
       </div>
@@ -249,5 +316,34 @@
       </div>
     </nav>
   </div>
+
+  @if($potential->latitude && $potential->longitude)
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var mapContainer = document.getElementById('village-map');
+        if (!mapContainer || typeof L === 'undefined') {
+          return;
+        }
+
+        var lat = parseFloat(@json($potential->latitude));
+        var lng = parseFloat(@json($potential->longitude));
+
+        if (isNaN(lat) || isNaN(lng)) {
+          return;
+        }
+
+        var map = L.map('village-map').setView([lat, lng], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([lat, lng]).addTo(map)
+          .bindPopup(@json($potential->title))
+          .openPopup();
+      });
+    </script>
+  @endif
 </body>
 </html>

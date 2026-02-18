@@ -5,11 +5,13 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\ImportVillages;
+use App\Console\Commands\GeneratePotentialsFromVillages;
 
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
         ImportVillages::class,
+        GeneratePotentialsFromVillages::class,
     ];
 
     /**

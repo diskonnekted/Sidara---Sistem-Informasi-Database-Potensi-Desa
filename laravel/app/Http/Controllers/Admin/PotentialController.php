@@ -1,0 +1,147 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Potential;
+use App\Models\Village;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class PotentialController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Potential::with('village')->orderBy('id', 'desc');
+
+        if ($request->filled('q')) {
+            $q = $request->input('q');
+            $query->where(function ($builder) use ($q) {
+                $builder->where('title', 'like', '%' . $q . '%')
+                    ->orWhere('description', 'like', '%' . $q . '%');
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('verification_status', $request->input('status'));
+        }
+
+        $potentials = $query->paginate(10)->withQueryString();
+
+        return view('admin.potentials.index', [
+            'potentials' => $potentials,
+        ]);
+    }
+
+    public function create()
+    {
+        $villages = Village::orderBy('village_name')->get();
+
+        return view('admin.potentials.form', [
+            'mode' => 'create',
+            'potential' => new Potential(),
+            'villages' => $villages,
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $this->validateData($request);
+
+        $data['slug'] = Str::slug($data['title']);
+        $data['source'] = 'manual';
+
+        $data['images'] = $this->handleImages($request);
+
+        Potential::create($data);
+
+        return redirect()
+            ->route('admin.potentials.index')
+            ->with('status', 'Potensi desa berhasil dibuat.');
+    }
+
+    public function edit(Potential $potential)
+    {
+        $villages = Village::orderBy('village_name')->get();
+
+        return view('admin.potentials.form', [
+            'mode' => 'edit',
+            'potential' => $potential,
+            'villages' => $villages,
+        ]);
+    }
+
+    public function update(Request $request, Potential $potential)
+    {
+        $data = $this->validateData($request, $potential->id);
+
+        if (empty($data['slug'])) {
+            $data['slug'] = Str::slug($data['title']);
+        }
+
+        $images = $this->handleImages($request, $potential);
+        if (!empty($images)) {
+            $data['images'] = $images;
+        }
+
+        $potential->update($data);
+
+        return redirect()
+            ->route('admin.potentials.index')
+            ->with('status', 'Potensi desa berhasil diperbarui.');
+    }
+
+    public function destroy(Potential $potential)
+    {
+        $potential->delete();
+
+        return redirect()
+            ->route('admin.potentials.index')
+            ->with('status', 'Potensi desa berhasil dihapus.');
+    }
+
+    protected function validateData(Request $request, $ignoreId = null)
+    {
+        $rules = [
+            'village_id' => 'required|exists:villages,id',
+            'title' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:potentials,slug',
+            'description' => 'nullable|string',
+            'price_range' => 'nullable|string|max:255',
+            'whatsapp_number' => 'nullable|string|max:50',
+            'location_address' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'verification_status' => 'required|in:pending,verified,rejected',
+            'images' => 'nullable',
+            'images.*' => 'image|mimes:jpeg,jpg,png,webp|max:2048',
+            'reset_images' => 'nullable|boolean',
+        ];
+
+        if ($ignoreId) {
+            $rules['slug'] = 'nullable|string|max:255|unique:potentials,slug,' . $ignoreId;
+        }
+
+        return $request->validate($rules);
+    }
+
+    protected function handleImages(Request $request, Potential $potential = null)
+    {
+        $images = [];
+
+        if ($potential && !$request->boolean('reset_images')) {
+            $images = $potential->images ?: [];
+        }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                if ($file && $file->isValid()) {
+                    $path = $file->store('potentials', 'public');
+                    $images[] = $path;
+                }
+            }
+        }
+
+        return $images;
+    }
+}

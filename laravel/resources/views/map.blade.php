@@ -22,9 +22,11 @@
     <header class="bg-emerald-900 text-emerald-50">
       <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <a href="{{ route('home') }}" class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
-            <span class="text-xs font-semibold tracking-wider">SD</span>
-          </div>
+          <img
+            src="{{ asset('logo.jpeg') }}"
+            alt="Logo SIDARA"
+            class="w-8 h-8 rounded-xl object-contain bg-emerald-700/80 p-1"
+          >
           <div>
             <div class="text-xs font-semibold tracking-wide uppercase">SIDARA</div>
             <div class="text-[11px] text-emerald-100">Peta Desa Banjarnegara</div>
@@ -141,4 +143,3 @@
   </script>
 </body>
 </html>
-
