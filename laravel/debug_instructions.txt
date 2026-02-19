@@ -1,0 +1,28 @@
+DEBUG INSTRUKSI UNTUK BROWSER CONSOLE:
+
+1. Buka http://localhost:8000/admin/potensi/81/edit
+2. Tekan F12 → buka Console tab
+3. Ketik "allow pasting" dan tekan Enter
+4. Copy-paste kode di bawah ini SATU PER SATU:
+
+--- KODE 1: Test klik tombol ---
+document.querySelector('button[type="submit"]').addEventListener('click', function() {
+    console.log('Tombol diklik!');
+});
+
+--- KODE 2: Test form submission ---
+document.querySelector('form').addEventListener('submit', function(e) {
+    console.log('Form submitted!');
+    e.preventDefault(); // Hanya test
+    alert('Form akan disubmit!');
+});
+
+--- KODE 3: Cek tombol properties ---
+var btn = document.querySelector('button[type="submit"]');
+console.log('Visible:', btn.offsetParent !== null);
+console.log('Disabled:', btn.disabled);
+console.log('Opacity:', window.getComputedStyle(btn).opacity);
+
+--- KODE 4: Test submit manual ---
+// Jalankan ini terakhir
+document.querySelector('form').submit();

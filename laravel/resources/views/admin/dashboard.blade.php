@@ -1,237 +1,186 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Dashboard Admin - SIDARA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-950 text-slate-100">
-  <div class="min-h-screen flex">
-    <aside class="hidden md:flex w-64 flex-col border-r border-slate-800 bg-gradient-to-b from-slate-950 to-slate-900">
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center">
-          <img
-            src="{{ asset('logo.jpeg') }}"
-            alt="Logo SIDARA"
-            class="w-8 h-8 object-contain"
-          >
-        </div>
-        <div>
-          <div class="text-xs font-semibold tracking-wide uppercase text-emerald-200">SIDARA</div>
-          <div class="text-[11px] text-slate-400">Dashboard Admin Desa</div>
-        </div>
-      </div>
-      <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-emerald-50 font-medium">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M5 13H11V5H5V13Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
-            <path d="M13 19H19V11H13V19Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
-          </svg>
-          <span>Ringkasan</span>
-        </a>
-        <a href="{{ route('home') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M5 11L12 4L19 11V19C19 19.5523 18.5523 20 18 20H6C5.44772 20 5 19.5523 5 19V11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
-          </svg>
-          <span>Halaman publik</span>
-        </a>
-      </nav>
-      <div class="px-4 py-4 border-t border-slate-800 text-[11px] text-slate-500">
-        Masuk sebagai prototipe admin. Integrasi autentikasi menyusul.
-      </div>
-    </aside>
+@extends('layouts.admin')
 
-    <div class="flex-1 flex flex-col">
-      <header class="border-b border-slate-800 bg-slate-950/70 backdrop-blur px-4 md:px-6 py-3 flex items-center justify-between gap-3">
-        <div>
-          <div class="flex items-center gap-2 text-xs text-emerald-300">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            <span>Dashboard Admin SIDARA</span>
-          </div>
-          <h1 class="text-sm md:text-base font-semibold text-slate-50">
-            Ringkasan potensi desa dan aktivitas kurasi
-          </h1>
-        </div>
-        <div class="flex items-center gap-2 text-[11px]">
-          <span class="hidden sm:inline text-slate-400">Mode demo</span>
-          <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            Admin Desa
-          </span>
-        </div>
-      </header>
+@section('header', 'Dashboard')
 
-      <main class="flex-1 px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <div class="bg-slate-900 rounded-2xl border border-slate-800 p-3 md:p-4 flex flex-col gap-1.5">
-            <div class="text-[11px] text-slate-400">Total potensi</div>
-            <div class="text-lg md:text-xl font-semibold text-emerald-400">
-              {{ number_format($totalPotentials) }}
-            </div>
-            <div class="text-[11px] text-slate-500">
-              Dari seluruh desa yang terdaftar
-            </div>
-          </div>
-          <div class="bg-slate-900 rounded-2xl border border-slate-800 p-3 md:p-4 flex flex-col gap-1.5">
-            <div class="text-[11px] text-slate-400">Potensi terverifikasi</div>
-            <div class="text-lg md:text-xl font-semibold text-emerald-200">
-              {{ number_format($verifiedPotentials) }}
-            </div>
-            <div class="text-[11px] text-emerald-400">
-              Siap tampil di halaman publik
-            </div>
-          </div>
-          <div class="bg-slate-900 rounded-2xl border border-slate-800 p-3 md:p-4 flex flex-col gap-1.5">
-            <div class="text-[11px] text-slate-400">Menunggu verifikasi</div>
-            <div class="text-lg md:text-xl font-semibold text-amber-300">
-              {{ number_format($pendingPotentials) }}
-            </div>
-            <div class="text-[11px] text-amber-300/80">
-              Perlu ditinjau admin desa
-            </div>
-          </div>
-          <div class="bg-slate-900 rounded-2xl border border-slate-800 p-3 md:p-4 flex flex-col gap-1.5">
-            <div class="text-[11px] text-slate-400">Desa terdata</div>
-            <div class="text-lg md:text-xl font-semibold text-sky-300">
-              {{ number_format($totalVillages) }}
-            </div>
-            <div class="text-[11px] text-slate-500">
-              Desa dengan profil di SIDARA
-            </div>
-          </div>
-        </section>
-
-        <section class="grid md:grid-cols-[3fr,2fr] gap-4 md:gap-6">
-          <div class="bg-slate-900 rounded-2xl border border-slate-800 p-3 md:p-4">
-            <div class="flex items-center justify-between mb-3 md:mb-4">
-              <div>
-                <h2 class="text-sm font-semibold text-slate-50">Pengajuan potensi terbaru</h2>
-                <p class="text-[11px] text-slate-400">
-                  Daftar potensi yang baru ditambahkan ke sistem.
+@section('content')
+<div class="space-y-8">
+    <div class="relative overflow-hidden rounded-3xl px-6 py-8 sm:px-10 sm:py-10 shadow-xl" style="background: linear-gradient(135deg, #219ebc, #023047);">
+        <div class="absolute inset-0 opacity-30">
+            <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl" style="background-color:#8ecae6;"></div>
+            <div class="absolute -left-10 bottom-0 h-32 w-32 rounded-full blur-3xl" style="background-color:#fb8500;"></div>
+        </div>
+        <div class="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide" style="background-color:#ffb703; color:#023047;">
+                    Ringkasan SIDARA
                 </p>
-              </div>
+                <h2 class="mt-3 text-2xl sm:text-3xl font-semibold text-white tracking-tight">Ringkasan Potensi Desa</h2>
+                <p class="mt-3 text-sm sm:text-base text-blue-50 max-w-xl">Pantau potensi desa, progres verifikasi, dan aktivitas terbaru dalam satu tampilan yang modern dan ringkas.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-1">
+                <div class="rounded-2xl px-4 py-3" style="background-color:rgba(142,202,230,0.15);">
+                    <p class="text-[11px] font-medium uppercase tracking-wide text-blue-100">Potensi terverifikasi</p>
+                    <p class="mt-1 text-xl font-semibold text-white">{{ $verifiedPotentials }}</p>
+                </div>
+                <div class="rounded-2xl px-4 py-3" style="background-color:rgba(251,133,0,0.18);">
+                    <p class="text-[11px] font-medium uppercase tracking-wide text-amber-100">Menunggu verifikasi</p>
+                    <p class="mt-1 text-xl font-semibold text-white">{{ $pendingPotentials }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-md ring-1" style="border-color:#8ecae6;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total potensi</p>
+                    <p class="mt-2 text-3xl font-semibold text-gray-900">{{ $totalPotentials }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl" style="background-color:#8ecae6; color:#023047;">
+                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 7C4 5.89543 4.89543 5 6 5H18C19.1046 5 20 5.89543 20 7V17C20 18.1046 19.1046 19 18 19H6C4.89543 19 4 18.1046 4 17V7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9H9.01M9 13H9.01M13 9H15.5C16.3284 9 17 9.67157 17 10.5C17 11.3284 16.3284 12 15.5 12H13V15H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-gray-500">Jumlah seluruh potensi yang tercatat di SIDARA.</p>
+        </div>
+
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-md ring-1" style="border-color:#8ecae6;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Potensi terverifikasi</p>
+                    <p class="mt-2 text-3xl font-semibold" style="color:#219ebc;">{{ $verifiedPotentials }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl" style="background-color:#8ecae6; color:#023047;">
+                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 7L10 17L5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-gray-500">Sudah siap ditampilkan di halaman publik desa.</p>
+        </div>
+
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-md ring-1" style="border-color:#8ecae6;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Menunggu verifikasi</p>
+                    <p class="mt-2 text-3xl font-semibold" style="color:#fb8500;">{{ $pendingPotentials }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl" style="background-color:rgba(255,183,3,0.15); color:#fb8500;">
+                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 8V12L15 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-gray-500">Perlu dicek dan disetujui oleh admin sebelum tayang.</p>
+        </div>
+
+        <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-md ring-1" style="border-color:#8ecae6;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Jumlah desa</p>
+                    <p class="mt-2 text-3xl font-semibold" style="color:#219ebc;">{{ $totalVillages }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl" style="background-color:#8ecae6; color:#023047;">
+                    <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10L12 4L20 10V19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 20V13H14V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-gray-500">Desa yang sudah terhubung dengan data potensi SIDARA.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div class="xl:col-span-2 rounded-2xl bg-white shadow-md ring-1 ring-gray-100">
+            <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+                <div>
+                    <h2 class="text-sm font-semibold text-gray-900">Potensi terbaru</h2>
+                    <p class="mt-1 text-xs text-gray-500">Entri terbaru yang dibuat oleh admin desa.</p>
+                </div>
             </div>
             <div class="overflow-x-auto">
-              <table class="min-w-full text-left border-separate border-spacing-y-1 text-[11px]">
-                <thead>
-                  <tr class="text-slate-400">
-                    <th class="px-2 py-1.5 font-medium">Potensi</th>
-                    <th class="px-2 py-1.5 font-medium">Desa</th>
-                    <th class="px-2 py-1.5 font-medium">Status</th>
-                    <th class="px-2 py-1.5 font-medium text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @forelse($latestPotentials as $potential)
-                    <tr class="bg-slate-950/60 hover:bg-slate-800/70">
-                      <td class="px-2 py-2 align-top">
-                        <div class="font-medium text-slate-50 line-clamp-2">
-                          {{ $potential->title }}
-                        </div>
-                        <div class="text-[10px] text-slate-500 line-clamp-1">
-                          {{ $potential->description ?: 'Belum ada deskripsi.' }}
-                        </div>
-                      </td>
-                      <td class="px-2 py-2 align-top">
-                        <div class="text-[11px] text-slate-200">
-                          {{ optional($potential->village)->village_name ?: '-' }}
-                        </div>
-                        <div class="text-[10px] text-slate-500">
-                          {{ optional($potential->village)->district_name ?: '' }}
-                        </div>
-                      </td>
-                      <td class="px-2 py-2 align-top">
-                        @php
-                          $status = $potential->verification_status;
-                          $badgeClasses = 'bg-amber-500/10 text-amber-300 border-amber-400/40';
-                          $label = 'Menunggu';
+                <table class="min-w-full divide-y divide-gray-100 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Nama potensi</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Desa</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 bg-white">
+                        @forelse($latestPotentials as $potential)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-3">
+                                    <div class="flex flex-col">
+                                        <span class="font-medium text-gray-900">{{ $potential->title }}</span>
+                                        <span class="text-xs text-gray-500">{{ Str::limit($potential->description, 80) }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-3 text-gray-700">
+                                    {{ $potential->village->village_name ?? 'Tidak diketahui' }}
+                                </td>
+                                <td class="px-6 py-3">
+                                    @php
+                                        $status = $potential->verification_status;
+                                        $statusColor = 'bg-gray-50 text-gray-700 ring-gray-600/20';
 
-                          if ($status === 'verified') {
-                              $badgeClasses = 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40';
-                              $label = 'Terverifikasi';
-                          } elseif ($status === 'rejected') {
-                              $badgeClasses = 'bg-rose-500/10 text-rose-300 border-rose-400/40';
-                              $label = 'Ditolak';
-                          }
-                        @endphp
-                        <span class="inline-flex px-2 py-0.5 rounded-full border text-[10px] {{ $badgeClasses }}">
-                          {{ $label }}
-                        </span>
-                      </td>
-                      <td class="px-2 py-2 align-top text-right">
-                        <a href="{{ route('potentials.show', $potential->slug) }}" class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 text-[10px] text-slate-100 border border-slate-700">
-                          Detail publik
-                        </a>
-                      </td>
-                    </tr>
-                  @empty
-                    <tr>
-                      <td colspan="4" class="px-2 py-4 text-center text-[11px] text-slate-500">
-                        Belum ada data potensi di sistem.
-                      </td>
-                    </tr>
-                  @endforelse
-                </tbody>
-              </table>
+                                        if ($status === 'verified') {
+                                            $statusColor = 'bg-emerald-50 text-emerald-700 ring-emerald-600/20';
+                                        } elseif ($status === 'pending') {
+                                            $statusColor = 'bg-amber-50 text-amber-700 ring-amber-600/20';
+                                        } elseif ($status === 'rejected') {
+                                            $statusColor = 'bg-rose-50 text-rose-700 ring-rose-600/20';
+                                        }
+
+                                        $statusLabel = ucfirst($status ?? 'Unknown');
+                                    @endphp
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 {{ $statusColor }}">{{ $statusLabel }}</span>
+                                </td>
+                                <td class="px-6 py-3 text-right text-gray-500">
+                                    {{ $potential->created_at ? $potential->created_at->format('d M Y') : '-' }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-6 text-center text-sm text-gray-500">
+                                    Belum ada potensi yang tercatat.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-          </div>
+        </div>
 
-          <div class="space-y-4">
-            <div class="bg-slate-900 rounded-2xl border border-slate-800 p-3 md:p-4">
-              <div class="flex items-center justify-between mb-3">
-                <div>
-                  <h2 class="text-sm font-semibold text-slate-50">Desa dengan potensi terbanyak</h2>
-                  <p class="text-[11px] text-slate-400">5 desa teratas berdasarkan jumlah potensi.</p>
+        <div class="space-y-6">
+            <div class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+                <h2 class="text-sm font-semibold text-gray-900">Sebaran potensi per desa</h2>
+                <p class="mt-1 text-xs text-gray-500">Desa dengan jumlah potensi terbanyak.</p>
+                <div class="mt-4 space-y-3">
+                    @forelse($potentialsByDistrict as $village)
+                        <div class="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ $village->village_name }}</p>
+                                <p class="text-xs text-gray-500">Total potensi: {{ $village->potentials_count }}</p>
+                            </div>
+                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold" style="background-color:rgba(142,202,230,0.35); color:#023047;">
+                                {{ $village->potentials_count }}
+                            </span>
+                        </div>
+                    @empty
+                        <p class="text-xs text-gray-500">Belum ada data potensi per desa.</p>
+                    @endforelse
                 </div>
-              </div>
-              <div class="space-y-2">
-                @forelse($potentialsByDistrict as $village)
-                  <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-950/60">
-                    <div>
-                      <div class="text-[11px] font-medium text-slate-100">
-                        {{ $village->village_name }}
-                      </div>
-                      <div class="text-[10px] text-slate-500">
-                        {{ $village->district_name }}
-                      </div>
-                    </div>
-                    <div class="flex items-baseline gap-1">
-                      <span class="text-sm font-semibold text-emerald-300">
-                        {{ $village->potentials_count }}
-                      </span>
-                      <span class="text-[10px] text-slate-400">
-                        potensi
-                      </span>
-                    </div>
-                  </div>
-                @empty
-                  <p class="text-[11px] text-slate-500">
-                    Belum ada desa dengan data potensi.
-                  </p>
-                @endforelse
-              </div>
             </div>
 
-            <div class="bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-2xl p-3 md:p-4 text-slate-950">
-              <div class="text-[11px] font-semibold uppercase tracking-wide">
-                Alur kerja admin desa
-              </div>
-              <p class="mt-1 text-sm font-semibold">
-                Verifikasi potensi dari warga sebelum tampil ke publik.
-              </p>
-              <p class="mt-1 text-[11px]">
-                Fitur aksi seperti setujui, revisi, dan tolak pengajuan akan
-                ditambahkan pada iterasi berikutnya.
-              </p>
-              <a href="{{ route('admin.potentials.index') }}" class="inline-flex items-center justify-center gap-2 mt-2 text-xs font-semibold bg-slate-950/90 hover:bg-slate-900 text-emerald-200 rounded-xl px-3 py-2">
-                Kelola Potensi Desa
-              </a>
+            <div class="rounded-2xl bg-slate-900 p-6 text-slate-50 shadow-md">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Tips kurasi</p>
+                        <p class="mt-2 text-sm font-medium">Fokus pada potensi yang belum diverifikasi</p>
+                    </div>
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-amber-300">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 17V11M12 7H12.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 21C16.4183 21 20 17.4183 20 13C20 8.58172 16.4183 5 12 5C7.58172 5 4 8.58172 4 13C4 17.4183 7.58172 21 12 21Z" stroke="currentColor" stroke-width="1.8"/></svg>
+                    </span>
+                </div>
+                <p class="mt-3 text-xs text-slate-300">Gunakan kartu di atas untuk melihat desa dengan banyak potensi dan prioritas verifikasi. Dashboard ini dirancang agar Anda bisa langsung melihat mana yang perlu dikerjakan terlebih dahulu.</p>
             </div>
-          </div>
-        </section>
-      </main>
+        </div>
     </div>
-  </div>
-</body>
-</html>
+</div>
+@endsection

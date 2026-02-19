@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Form Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-2xl font-bold mb-4">Test Form Submission</h1>
+    
+    <!-- Test Form Sederhana -->
+    <form method="POST" action="/test-submit" class="bg-white p-6 rounded shadow">
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Nama Produk</label>
+            <input type="text" name="title" class="w-full p-2 border rounded" value="Test Product">
+        </div>
+        
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+            Test Submit
+        </button>
+    </form>
+
+    <script>
+        console.log('Test form loaded');
+        
+        // Test jika form bisa di-submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            console.log('Form submitted!');
+            // Jangan prevent default untuk test
+        });
+    </script>
+</body>
+</html>

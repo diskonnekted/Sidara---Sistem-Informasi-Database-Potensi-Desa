@@ -21,6 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'village_id',
+        'avatar_path',
+        'is_admin',
     ];
 
     /**
@@ -40,5 +44,11 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_admin' => 'boolean',
     ];
+
+    public function village()
+    {
+        return $this->belongsTo(Village::class);
+    }
 }

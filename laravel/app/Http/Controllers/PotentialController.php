@@ -90,4 +90,16 @@ class PotentialController extends Controller
             'potential' => $potential,
         ]);
     }
+
+    public function map()
+    {
+        $potentials = Potential::with('village')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
+        return view('map', [
+            'potentials' => $potentials,
+        ]);
+    }
 }

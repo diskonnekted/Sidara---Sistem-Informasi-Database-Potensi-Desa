@@ -5,6 +5,17 @@
   <title>{{ $mode === 'edit' ? 'Edit Potensi Desa' : 'Tambah Potensi Desa' }} - SIDARA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  >
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
 </head>
 <body class="bg-slate-950 text-slate-100">
   <div class="min-h-screen flex flex-col">
@@ -105,15 +116,18 @@
             >
             @if($mode === 'edit' && $potential->images)
               <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2">
-                @foreach($potential->images as $img)
+                @foreach($potential->images as $index => $img)
                   @php
                     $src = $img;
                     if ($img && !preg_match('/^https?:\/\//i', $img)) {
                       $src = asset('storage/'.$img);
                     }
                   @endphp
-                  <div class="relative">
+                  <div class="relative group">
                     <img src="{{ $src }}" alt="Foto potensi" class="w-full h-20 object-cover rounded-xl border border-slate-700">
+                    <button type="button" data-index="{{ $index }}" class="delete-image-btn absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center bg-rose-500 hover:bg-rose-400 text-white rounded-full text-xs">
+                      &times;
+                    </button>
                   </div>
                 @endforeach
               </div>
@@ -225,6 +239,16 @@
             </div>
           </div>
 
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-semibold text-slate-200">
+              Peta lokasi
+            </label>
+            <div id="potential-map" class="w-full h-64 rounded-2xl border border-slate-700 overflow-hidden"></div>
+            <p class="text-[11px] text-slate-500">
+              Klik pada peta untuk menempatkan marker, koordinat akan terisi otomatis.
+            </p>
+          </div>
+
           <div class="pt-3 flex items-center justify-between gap-3">
             <p class="text-[11px] text-slate-500">
               Data yang disimpan akan langsung terhubung dengan halaman publik SIDARA.
@@ -232,6 +256,7 @@
             <button
               type="submit"
               class="inline-flex items-center justify-center gap-2 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl px-4 py-2.5"
+              style="z-index: 1000; position: relative;"
             >
               {{ $mode === 'edit' ? 'Simpan perubahan' : 'Simpan potensi' }}
             </button>
@@ -240,5 +265,93 @@
       </section>
     </main>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var latInput = document.querySelector('input[name="latitude"]');
+      var lngInput = document.querySelector('input[name="longitude"]');
+      var mapContainer = document.getElementById('potential-map');
+
+      if (!latInput || !lngInput || !mapContainer || typeof L === 'undefined') {
+        return;
+      }
+
+      var lat = parseFloat(latInput.value);
+      var lng = parseFloat(lngInput.value);
+      var hasInitial = !isNaN(lat) && !isNaN(lng);
+
+      var defaultLat = hasInitial ? lat : -7.4531;
+      var defaultLng = hasInitial ? lng : 109.7044;
+
+      var map = L.map(mapContainer).setView([defaultLat, defaultLng], hasInitial ? 15 : 12);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      var marker = null;
+
+      function attachDrag(markerInstance) {
+        markerInstance.on('dragend', function (e) {
+          var pos = e.target.getLatLng();
+          latInput.value = pos.lat.toFixed(6);
+          lngInput.value = pos.lng.toFixed(6);
+        });
+      }
+
+      if (hasInitial) {
+        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        attachDrag(marker);
+      }
+
+      function setMarker(latValue, lngValue) {
+        if (marker) {
+          marker.setLatLng([latValue, lngValue]);
+        } else {
+          marker = L.marker([latValue, lngValue], { draggable: true }).addTo(map);
+          attachDrag(marker);
+        }
+        latInput.value = latValue.toFixed(6);
+        lngInput.value = lngValue.toFixed(6);
+      }
+
+      map.on('click', function (e) {
+        setMarker(e.latlng.lat, e.latlng.lng);
+      });
+    });
+
+    // Function untuk delete image
+    function deleteImage(imageIndex) {
+      if (confirm('Hapus foto ini?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("admin.potentials.deleteImage", ["potential" => $potential, "imageIndex" => "IMAGE_INDEX"]) }}'.replace('IMAGE_INDEX', imageIndex);
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        
+        const method = document.createElement('input');
+        method.type = 'hidden';
+        method.name = '_method';
+        method.value = 'DELETE';
+        
+        form.appendChild(csrfToken);
+        form.appendChild(method);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    // Event listener untuk tombol delete image
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('delete-image-btn') || e.target.closest('.delete-image-btn')) {
+        const button = e.target.classList.contains('delete-image-btn') ? e.target : e.target.closest('.delete-image-btn');
+        const index = button.getAttribute('data-index');
+        deleteImage(index);
+      }
+    });
+  </script>
 </body>
 </html>

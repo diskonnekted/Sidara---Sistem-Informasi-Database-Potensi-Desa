@@ -26,10 +26,46 @@ class PotentialController extends Controller
             $query->where('verification_status', $request->input('status'));
         }
 
+        if ($request->filled('district')) {
+            $query->whereHas('village', function ($q) use ($request) {
+                $q->where('district_name', $request->input('district'));
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('attributes->product_category', $request->input('category'));
+        }
+
+        if ($request->filled('village')) {
+            $query->whereHas('village', function ($q) use ($request) {
+                $q->where('village_name', $request->input('village'));
+            });
+        }
+
         $potentials = $query->paginate(10)->withQueryString();
+
+        // Get unique districts for filter dropdown
+        $districts = Village::distinct('district_name')
+            ->orderBy('district_name')
+            ->pluck('district_name');
+
+        // Kategori potensi (kode tetap)
+        $categories = [
+            'UM' => 'UM - Produk UMKM',
+            'WS' => 'WS - Wisata & Rekreasi',
+            'PT' => 'PT - Pertanian & Perkebunan',
+            'SB' => 'SB - Seni, Budaya, & Jasa',
+        ];
+
+        // Get villages list for desa filter
+        $villages = Village::orderBy('village_name')
+            ->pluck('village_name');
 
         return view('admin.potentials.index', [
             'potentials' => $potentials,
+            'districts' => $districts,
+            'categories' => $categories,
+            'villages' => $villages,
         ]);
     }
 
@@ -37,8 +73,7 @@ class PotentialController extends Controller
     {
         $villages = Village::orderBy('village_name')->get();
 
-        return view('admin.potentials.form', [
-            'mode' => 'create',
+        return view('admin.potentials.create', [
             'potential' => new Potential(),
             'villages' => $villages,
         ]);
@@ -64,8 +99,7 @@ class PotentialController extends Controller
     {
         $villages = Village::orderBy('village_name')->get();
 
-        return view('admin.potentials.form', [
-            'mode' => 'edit',
+        return view('admin.potentials.edit', [
             'potential' => $potential,
             'villages' => $villages,
         ]);
@@ -80,9 +114,7 @@ class PotentialController extends Controller
         }
 
         $images = $this->handleImages($request, $potential);
-        if (!empty($images)) {
-            $data['images'] = $images;
-        }
+        $data['images'] = $images;
 
         $potential->update($data);
 
@@ -98,6 +130,37 @@ class PotentialController extends Controller
         return redirect()
             ->route('admin.potentials.index')
             ->with('status', 'Potensi desa berhasil dihapus.');
+    }
+
+    public function deleteImage(Potential $potential, $imageIndex)
+    {
+        $images = $potential->images ?: [];
+        
+        // Validasi index
+        if (!isset($images[$imageIndex])) {
+            return redirect()
+                ->route('admin.potentials.edit', $potential)
+                ->with('error', 'Foto tidak ditemukan.');
+        }
+        
+        // Hapus file dari storage jika bukan external URL
+        $imageToDelete = $images[$imageIndex];
+        if (!filter_var($imageToDelete, FILTER_VALIDATE_URL)) {
+            $filePath = storage_path('app/public/' . $imageToDelete);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+        
+        // Hapus dari array images
+        array_splice($images, $imageIndex, 1);
+        
+        // Update database
+        $potential->update(['images' => $images]);
+
+        return redirect()
+            ->route('admin.potentials.edit', $potential)
+            ->with('status', 'Foto berhasil dihapus.');
     }
 
     protected function validateData(Request $request, $ignoreId = null)
@@ -125,7 +188,7 @@ class PotentialController extends Controller
         return $request->validate($rules);
     }
 
-    protected function handleImages(Request $request, Potential $potential = null)
+    protected function handleImages(Request $request, ?Potential $potential = null)
     {
         $images = [];
 

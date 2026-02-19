@@ -1,23 +1,31 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\PotentialController as AdminPotentialController;
 use App\Http\Controllers\PotentialController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\VillageController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\PotentialController as AdminPotentialController;
 
 Route::get('/', [PotentialController::class, 'index'])->name('home');
 Route::get('/potensi/{slug}', [PotentialController::class, 'show'])->name('potentials.show');
-Route::view('/peta', 'map')->name('map');
+Route::get('/peta', [PotentialController::class, 'map'])->name('map');
 Route::get('/desa', [VillageController::class, 'index'])->name('villages.index');
 Route::get('/desa/{slug}', [VillageController::class, 'show'])->name('villages.show');
-Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard');
+Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
+Route::get('/produk/{id}', [ProductController::class, 'show'])->name('products.show');
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/potensi', [AdminPotentialController::class, 'index'])->name('potentials.index');
-    Route::get('/potensi/create', [AdminPotentialController::class, 'create'])->name('potentials.create');
-    Route::post('/potensi', [AdminPotentialController::class, 'store'])->name('potentials.store');
-    Route::get('/potensi/{potential}/edit', [AdminPotentialController::class, 'edit'])->name('potentials.edit');
-    Route::put('/potensi/{potential}', [AdminPotentialController::class, 'update'])->name('potentials.update');
-    Route::delete('/potensi/{potential}', [AdminPotentialController::class, 'destroy'])->name('potentials.destroy');
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home.dashboard');
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Rute admin lainnya bisa ditambahkan di sini
+    Route::resource('users', UserController::class);
+    Route::resource('potentials', AdminPotentialController::class)->except(['show']);
+    Route::delete('/potensi/{potential}/image/{imageIndex}', [AdminPotentialController::class, 'deleteImage'])->name('potentials.deleteImage');
 });

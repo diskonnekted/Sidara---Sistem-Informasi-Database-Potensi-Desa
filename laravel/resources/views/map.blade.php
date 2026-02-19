@@ -5,6 +5,21 @@
   <title>Peta Desa - SIDARA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .sidara-popup .leaflet-popup-content-wrapper {
+      background: transparent;
+      box-shadow: none;
+      border-radius: 0;
+      padding: 0;
+    }
+    .sidara-popup .leaflet-popup-content {
+      margin: 0;
+    }
+    .sidara-popup .leaflet-popup-tip {
+      background: transparent;
+      box-shadow: none;
+    }
+  </style>
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -95,7 +110,88 @@
     </nav>
   </div>
 
+  @php
+    $potentialPoints = isset($potentials)
+        ? $potentials->map(function ($p) {
+            $firstImage = $p->images[0] ?? null;
+
+            if ($firstImage) {
+                if (preg_match('/^https?:\/\//i', $firstImage)) {
+                    $firstImageUrl = $firstImage;
+                } elseif (str_starts_with($firstImage, 'storage/') || str_starts_with($firstImage, 'potensi/') || str_starts_with($firstImage, 'images/')) {
+                    $firstImageUrl = asset($firstImage);
+                } else {
+                    $firstImageUrl = asset('storage/'.$firstImage);
+                }
+            } else {
+                $firstImageUrl = 'https://images.pexels.com/photos/2403207/pexels-photo-2403207.jpeg';
+            }
+
+            return [
+                'id' => $p->id,
+                'title' => $p->title,
+                'lat' => $p->latitude,
+                'lng' => $p->longitude,
+                'village' => optional($p->village)->village_name,
+                'district' => optional($p->village)->district_name,
+                'status' => $p->verification_status,
+                'url' => route('potentials.show', $p->slug),
+                'image' => $firstImageUrl,
+            ];
+        })
+        : collect();
+  @endphp
+
   <script>
+    var potentials = @json($potentialPoints);
+
+    function addPotentialMarkers(map, bounds) {
+      potentials.forEach(function (p) {
+        if (!p.lat || !p.lng) {
+          return;
+        }
+
+        var marker = L.marker([p.lat, p.lng]).addTo(map);
+        var popupHtml = ''
+          + '<div class=\"w-52 bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-100\">'
+          + '  <div class=\"relative h-24\">'
+          + '    <img src=\"' + (p.image || '') + '\" alt=\"' + p.title + '\"'
+          + '      class=\"w-full h-full object-cover\">'
+          + '    <div class=\"absolute inset-0 bg-gradient-to-t from-black/60 to-transparent\"></div>'
+          + '    <div class=\"absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between\">'
+          + '      <div class=\"px-1.5 py-0.5 rounded-full bg-black/50 text-[9px] text-white truncate\">'
+          +          (p.village ? p.village : 'Potensi Desa')
+          + '      </div>'
+          + '      <span class=\"px-1.5 py-0.5 rounded-full bg-emerald-500 text-[9px] text-white font-semibold\">'
+          + '        Detail'
+          + '      </span>'
+          + '    </div>'
+          + '  </div>'
+          + '  <div class=\"p-2.5 space-y-1\">'
+          + '    <div class=\"text-[11px] font-semibold text-slate-900 leading-snug line-clamp-2\">' + p.title + '</div>'
+          +      (p.district
+                    ? '    <div class=\"text-[10px] text-slate-500\">' + (p.village ? p.village + ', ' : '') + p.district + '</div>'
+                    : '')
+          + '    <div class=\"pt-1\">'
+          + '      <a href=\"' + p.url + '\"'
+          + '        class=\"inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-medium\">'
+          + '        <span>Lihat detail</span>'
+          + '      </a>'
+          + '    </div>'
+          + '  </div>'
+          + '</div>';
+
+        marker.bindPopup(popupHtml, {
+          closeButton: false,
+          className: 'sidara-popup'
+        });
+
+        if (bounds) {
+          bounds.extend([p.lat, p.lng]);
+        }
+      });
+    }
+
     var map = L.map('map', {
       zoomControl: true
     }).setView([-7.45, 109.6], 11);
@@ -105,8 +201,13 @@
       attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    fetch('/Docs/peta-desa/peta_desa.geojson')
+    var hasAnyPotential = potentials && potentials.length > 0;
+
+    fetch('/docs/peta-desa/peta_desa.geojson')
       .then(function (response) {
+        if (!response.ok) {
+          throw new Error('GeoJSON not found');
+        }
         return response.json();
       })
       .then(function (data) {
@@ -114,9 +215,9 @@
           style: function () {
             return {
               color: '#059669',
-              weight: 1,
+              weight: 0.4,
               fillColor: '#6ee7b7',
-              fillOpacity: 0.35
+              fillOpacity: 0.25
             };
           },
           onEachFeature: function (feature, layer) {
@@ -133,12 +234,34 @@
           }
         }).addTo(map);
 
-        map.fitBounds(layer.getBounds(), {
-          padding: [20, 20]
-        });
+        var bounds = layer.getBounds();
+
+        if (hasAnyPotential) {
+          addPotentialMarkers(map, bounds);
+        }
+
+        if (bounds.isValid && typeof bounds.isValid === 'function') {
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, {
+              padding: [20, 20]
+            });
+          }
+        } else {
+          map.fitBounds(bounds, {
+            padding: [20, 20]
+          });
+        }
       })
       .catch(function () {
         console.error('Gagal memuat data peta desa.');
+
+        if (hasAnyPotential) {
+          var bounds = L.latLngBounds();
+          addPotentialMarkers(map, bounds);
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [20, 20] });
+          }
+        }
       });
   </script>
 </body>
